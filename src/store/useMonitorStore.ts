@@ -54,7 +54,23 @@ export const useMonitorStore = create<MonitorStore>((set, get) => ({
   globalFuseActive: false,
   tracePath: null,
   visualFlash: null,
-  batches: [...MOCK_BATCHES],
+  batches: (() => {
+    try {
+      const saved = localStorage.getItem('cyber-workshop-batches');
+      if (saved) {
+        const parsed = JSON.parse(saved) as Batch[];
+        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].tempHistory?.length > 0) {
+          const firstT = parsed[0].tempHistory[0].t;
+          const lastT = parsed[0].tempHistory[parsed[0].tempHistory.length - 1].t;
+          if (firstT >= parsed[0].startTime - 60000 && lastT <= parsed[0].endTime + 60000) {
+            return parsed;
+          }
+        }
+      }
+    } catch { /* ignore */ }
+    localStorage.removeItem('cyber-workshop-batches');
+    return [...MOCK_BATCHES];
+  })(),
 
   toggleDevice: (deviceId: string) => {
     const state = get();
@@ -423,28 +439,32 @@ export const useMonitorStore = create<MonitorStore>((set, get) => ({
   },
 
   acceptBatch: (batchId: string, inspector: string, remark?: string) => {
-    set(prev => ({
-      batches: prev.batches.map(b =>
+    set(prev => {
+      const batches = prev.batches.map(b =>
         b.id === batchId
           ? { ...b, status: 'accepted' as BatchStatus, inspector, remark: remark || b.remark }
           : b
-      ),
-    }));
+      );
+      localStorage.setItem('cyber-workshop-batches', JSON.stringify(batches));
+      return { batches };
+    });
   },
 
   rejectBatch: (batchId: string, inspector: string, remark?: string) => {
-    set(prev => ({
-      batches: prev.batches.map(b =>
+    set(prev => {
+      const batches = prev.batches.map(b =>
         b.id === batchId
           ? { ...b, status: 'rejected' as BatchStatus, inspector, remark: remark || b.remark }
           : b
-      ),
-    }));
+      );
+      localStorage.setItem('cyber-workshop-batches', JSON.stringify(batches));
+      return { batches };
+    });
   },
 
   updateBatchStatus: (batchId: string, status: BatchStatus, inspector?: string, remark?: string) => {
-    set(prev => ({
-      batches: prev.batches.map(b =>
+    set(prev => {
+      const batches = prev.batches.map(b =>
         b.id === batchId
           ? {
               ...b,
@@ -453,7 +473,9 @@ export const useMonitorStore = create<MonitorStore>((set, get) => ({
               remark: remark || b.remark,
             }
           : b
-      ),
-    }));
+      );
+      localStorage.setItem('cyber-workshop-batches', JSON.stringify(batches));
+      return { batches };
+    });
   },
 }));

@@ -45,13 +45,27 @@ export default function BatchTrace() {
     return { total, pending, risky, critical };
   }, [batches]);
 
+  useEffect(() => {
+    if (selectedBatch && !filteredBatches.some(b => b.id === selectedBatch.id)) {
+      setSelectedBatch(null);
+    }
+  }, [filteredBatches, selectedBatch]);
+
+  useEffect(() => {
+    if (selectedBatch) {
+      const updated = batches.find(b => b.id === selectedBatch.id);
+      if (updated && (updated.status !== selectedBatch.status || updated.inspector !== selectedBatch.inspector || updated.remark !== selectedBatch.remark)) {
+        setSelectedBatch(updated);
+      }
+    }
+  }, [batches, selectedBatch]);
+
   const handleAccept = () => {
     if (!selectedBatch || !inspectorName.trim()) return;
     acceptBatch(selectedBatch.id, inspectorName.trim(), remark.trim() || undefined);
     setShowAcceptDialog(false);
     setInspectorName('');
     setRemark('');
-    setSelectedBatch(prev => prev ? { ...prev, status: 'accepted', inspector: inspectorName.trim(), remark: remark.trim() || prev.remark } : null);
   };
 
   const handleReject = () => {
@@ -60,7 +74,6 @@ export default function BatchTrace() {
     setShowRejectDialog(false);
     setInspectorName('');
     setRemark('');
-    setSelectedBatch(prev => prev ? { ...prev, status: 'rejected', inspector: inspectorName.trim(), remark: remark.trim() || prev.remark } : null);
   };
 
   const spindleOptions = useMemo(() => {

@@ -189,16 +189,18 @@ export const DEVICE_GROUPS = [
   { id: 'logistics', name: '物流系统', deviceIds: ['CONV-IN', 'CONV-OUT', 'ROBOT-ARM'] },
 ];
 
-const genTempHistory = (base: number, peak: number, steps: number): Array<{ t: number; v: number }> => {
+const genTempHistory = (base: number, peak: number, steps: number, start: number, end: number): Array<{ t: number; v: number }> => {
   const hist: Array<{ t: number; v: number }> = [];
-  const now = Date.now();
+  const duration = end - start;
   for (let i = 0; i < steps; i++) {
     const progress = i / (steps - 1);
     const temp = base + (peak - base) * Math.sin(progress * Math.PI) + (Math.random() - 0.5) * 3;
-    hist.push({ t: now - (steps - i) * 60000, v: Math.round(temp * 10) / 10 });
+    hist.push({ t: start + progress * duration, v: Math.round(temp * 10) / 10 });
   }
   return hist;
 };
+
+const NOW = Date.now();
 
 export const MOCK_BATCHES: Batch[] = [
   {
@@ -213,13 +215,13 @@ export const MOCK_BATCHES: Batch[] = [
     tempPeak: 58.2,
     tempThreshold: 62,
     avgTemp: 45.3,
-    startTime: Date.now() - 3600000 * 4,
-    endTime: Date.now() - 3600000 * 2,
+    startTime: NOW - 3600000 * 4,
+    endTime: NOW - 3600000 * 2,
     riskLevel: 'normal',
     status: 'accepted',
     inspector: '张工',
     remark: '正常批次，温度稳定',
-    tempHistory: genTempHistory(35, 58, 20),
+    tempHistory: genTempHistory(35, 58, 20, NOW - 3600000 * 4, NOW - 3600000 * 2),
   },
   {
     id: 'B-002',
@@ -233,11 +235,11 @@ export const MOCK_BATCHES: Batch[] = [
     tempPeak: 65.8,
     tempThreshold: 62,
     avgTemp: 52.1,
-    startTime: Date.now() - 3600000 * 2,
-    endTime: Date.now() - 3600000 * 0.5,
+    startTime: NOW - 3600000 * 2,
+    endTime: NOW - 3600000 * 0.5,
     riskLevel: 'warning',
     status: 'pending',
-    tempHistory: genTempHistory(40, 66, 20),
+    tempHistory: genTempHistory(40, 66, 20, NOW - 3600000 * 2, NOW - 3600000 * 0.5),
   },
   {
     id: 'B-003',
@@ -251,12 +253,12 @@ export const MOCK_BATCHES: Batch[] = [
     tempPeak: 72.4,
     tempThreshold: 62,
     avgTemp: 58.6,
-    startTime: Date.now() - 3600000 * 24,
-    endTime: Date.now() - 3600000 * 22,
+    startTime: NOW - 3600000 * 24,
+    endTime: NOW - 3600000 * 22,
     riskLevel: 'critical',
     status: 'pending',
     remark: '超温严重，需重点检测',
-    tempHistory: genTempHistory(45, 72, 25),
+    tempHistory: genTempHistory(45, 72, 25, NOW - 3600000 * 24, NOW - 3600000 * 22),
   },
   {
     id: 'B-004',
@@ -270,12 +272,12 @@ export const MOCK_BATCHES: Batch[] = [
     tempPeak: 60.1,
     tempThreshold: 62,
     avgTemp: 48.7,
-    startTime: Date.now() - 3600000 * 26,
-    endTime: Date.now() - 3600000 * 24,
+    startTime: NOW - 3600000 * 26,
+    endTime: NOW - 3600000 * 24,
     riskLevel: 'normal',
     status: 'accepted',
     inspector: '李工',
-    tempHistory: genTempHistory(38, 60, 20),
+    tempHistory: genTempHistory(38, 60, 20, NOW - 3600000 * 26, NOW - 3600000 * 24),
   },
   {
     id: 'B-005',
@@ -289,13 +291,13 @@ export const MOCK_BATCHES: Batch[] = [
     tempPeak: 68.5,
     tempThreshold: 62,
     avgTemp: 54.2,
-    startTime: Date.now() - 3600000 * 28,
-    endTime: Date.now() - 3600000 * 26,
+    startTime: NOW - 3600000 * 28,
+    endTime: NOW - 3600000 * 26,
     riskLevel: 'warning',
     status: 'rejected',
     inspector: '王工',
     remark: '温度超标，批次拒收',
-    tempHistory: genTempHistory(42, 68, 22),
+    tempHistory: genTempHistory(42, 68, 22, NOW - 3600000 * 28, NOW - 3600000 * 26),
   },
   {
     id: 'B-006',
@@ -309,12 +311,12 @@ export const MOCK_BATCHES: Batch[] = [
     tempPeak: 55.3,
     tempThreshold: 62,
     avgTemp: 42.8,
-    startTime: Date.now() - 3600000 * 48,
-    endTime: Date.now() - 3600000 * 46,
+    startTime: NOW - 3600000 * 48,
+    endTime: NOW - 3600000 * 46,
     riskLevel: 'normal',
     status: 'accepted',
     inspector: '张工',
-    tempHistory: genTempHistory(35, 55, 18),
+    tempHistory: genTempHistory(35, 55, 18, NOW - 3600000 * 48, NOW - 3600000 * 46),
   },
   {
     id: 'B-007',
@@ -328,13 +330,13 @@ export const MOCK_BATCHES: Batch[] = [
     tempPeak: 63.7,
     tempThreshold: 62,
     avgTemp: 50.5,
-    startTime: Date.now() - 3600000 * 50,
-    endTime: Date.now() - 3600000 * 48,
+    startTime: NOW - 3600000 * 50,
+    endTime: NOW - 3600000 * 48,
     riskLevel: 'warning',
     status: 'accepted',
     inspector: '李工',
     remark: '轻微超温，抽检合格',
-    tempHistory: genTempHistory(40, 64, 20),
+    tempHistory: genTempHistory(40, 64, 20, NOW - 3600000 * 50, NOW - 3600000 * 48),
   },
   {
     id: 'B-008',
@@ -348,12 +350,12 @@ export const MOCK_BATCHES: Batch[] = [
     tempPeak: 52.6,
     tempThreshold: 62,
     avgTemp: 41.2,
-    startTime: Date.now() - 3600000 * 72,
-    endTime: Date.now() - 3600000 * 70,
+    startTime: NOW - 3600000 * 72,
+    endTime: NOW - 3600000 * 70,
     riskLevel: 'normal',
     status: 'accepted',
     inspector: '张工',
-    tempHistory: genTempHistory(33, 52, 18),
+    tempHistory: genTempHistory(33, 52, 18, NOW - 3600000 * 72, NOW - 3600000 * 70),
   },
 ];
 
